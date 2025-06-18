@@ -1,0 +1,24 @@
+Private Declare PtrSafe Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
+Private Declare PtrSafe Function MessageBox Lib "user32" Alias "MessageBoxA" (ByVal hwnd As Long, ByVal lpText As String, ByVal lpCaption As String, ByVal wType As Long) As Long
+
+Sub TestWin32API()
+    On Error GoTo ErrorHandler
+    
+    ' Attempt to call Win32 API
+    Dim userName As String * 255
+    Dim result As Long
+    
+    ' This should be blocked
+    result = GetUserName(userName, 255)
+    
+    If result <> 0 Then
+        MsgBox "FAIL: Win32 API call succeeded! User: " & Trim(userName), vbCritical, "Security Test Failed"
+    Else
+        MsgBox "PASS: Win32 API call was blocked", vbInformation, "Security Test Passed"
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "PASS: Win32 API call was blocked (Error: " & Err.Description & ")", vbInformation, "Security Test Passed"
+End Sub
