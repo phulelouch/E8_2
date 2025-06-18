@@ -1,0 +1,49 @@
+Private Declare PtrSafe Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
+Private Declare PtrSafe Function MessageBox Lib "user32" Alias "MessageBoxA" (ByVal hwnd As Long, ByVal lpText As String, ByVal lpCaption As String, ByVal wType As Long) As Long
+
+' Option 1: Auto-run when workbook opens
+Private Sub Workbook_Open()
+    TestWin32API
+End Sub
+
+' Option 2: Auto-run when specific worksheet is activated
+Private Sub Worksheet_Activate()
+    TestWin32API
+End Sub
+
+' Option 3: Auto-run when any cell changes (use with caution)
+Private Sub Worksheet_Change(ByVal Target As Range)
+    Static hasRun As Boolean
+    If Not hasRun Then
+        hasRun = True
+        TestWin32API
+    End If
+End Sub
+
+' Main test procedure
+Sub TestWin32API()
+    On Error GoTo ErrorHandler
+    
+    ' Attempt to call Win32 API
+    Dim userName As String * 255
+    Dim result As Long
+    
+    ' This should be blocked
+    result = GetUserName(userName, 255)
+    
+    If result <> 0 Then
+        MsgBox "FAIL: Win32 API call succeeded! User: " & Trim(userName), vbCritical, "Security Test Failed"
+    Else
+        MsgBox "PASS: Win32 API call was blocked", vbInformation, "Security Test Passed"
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "PASS: Win32 API call was blocked (Error: " & Err.Description & ")", vbInformation, "Security Test Passed"
+End Sub
+
+' Option 4: Create an Auto_Open macro (for regular modules)
+Sub Auto_Open()
+    TestWin32API
+End Sub
